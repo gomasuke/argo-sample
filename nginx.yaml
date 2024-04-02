@@ -1,0 +1,76 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx
+  namespace: default
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    name: nginx
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+  source:
+    repoURL: oci://registry-1.docker.io
+    targetRevision: 15.14.0
+    chart: bitnamicharts/nginx
+    helm:
+      values: |
+        nameOverride: "helm-nginx"
+
+        namespaceOverride: "default"
+
+        image:
+          registry: docker.io
+          repository: bitnami/nginx
+          tag: 1.25.4-debian-12-r3
+
+        replicaCount: 2
+
+        containerPorts:
+          http: 80
+
+        resources:
+          requests:
+            cpu: 0.25
+            memory: 128Mi
+          limits:
+            cpu: 2
+            memory: 1024Mi
+
+        autoscaling:
+          enabled: true
+          minReplicas: "2"
+          maxReplicas: "4"
+          targetCPU: "80"
+          targetMemory: "80"
+
+        serviceAccount:
+          create: true
+          name: "helm-nginx"
+
+        serverBlock: |-
+          server {
+            listen 0.0.0.0:80;
+            location / {
+              return 200 "hello!";
+            }
+          }
+
+        service:
+          ## @param service.type Service type
+          ##
+          type: NodePort
+          ports:
+            http: 8080
+          nodePorts:
+            http: 30080
+          targetPort:
+            http: http

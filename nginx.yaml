@@ -18,9 +18,9 @@ spec:
       selfHeal: true
       allowEmpty: false
   source:
-    repoURL: oci://registry-1.docker.io
+    repoURL: https://charts.bitnami.com
     targetRevision: 15.14.0
-    chart: bitnamicharts/nginx
+    chart: bitnami/nginx
     helm:
       values: |
         nameOverride: "helm-nginx"

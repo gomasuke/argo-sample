@@ -48,7 +48,7 @@ spec:
           server {
             listen 0.0.0.0:8080;
             location / {
-              return 200 "hello! \n";
+              return 200 "こんにちは！ \n";
             }
           }
 

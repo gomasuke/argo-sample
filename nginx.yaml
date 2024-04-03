@@ -2,11 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: nginx
-  namespace: default
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
-  labels:
-    name: nginx
+  namespace: argocd
 spec:
   project: default
   destination:
@@ -16,27 +12,29 @@ spec:
     automated:
       prune: true
       selfHeal: true
-      allowEmpty: false
   source:
-    repoURL: https://charts.bitnami.com
+    repoURL: https://charts.bitnami.com/bitnami
     targetRevision: 15.14.0
-    chart: bitnami/nginx
+    chart: nginx
     helm:
       values: |
-        nameOverride: "helm-nginx"
-
+        # デプロイされるnamespacce
         namespaceOverride: "default"
 
+        # デプロイされるコンテナイメージ
         image:
           registry: docker.io
           repository: bitnami/nginx
           tag: 1.25.4-debian-12-r3
 
+        # レプリカ数
         replicaCount: 2
 
+        # コンテナが公開するポート番号
         containerPorts:
-          http: 80
+          http: 8080
 
+        # コンテナに割り当てるスペック
         resources:
           requests:
             cpu: 0.25
@@ -45,25 +43,16 @@ spec:
             cpu: 2
             memory: 1024Mi
 
-        autoscaling:
-          enabled: true
-          minReplicas: "2"
-          maxReplicas: "4"
-          targetCPU: "80"
-          targetMemory: "80"
-
-        serviceAccount:
-          create: true
-          name: "helm-nginx"
-
+        # conf設定
         serverBlock: |-
           server {
-            listen 0.0.0.0:80;
+            listen 0.0.0.0:8080;
             location / {
-              return 200 "hello!";
+              return 200 "hello! \n";
             }
           }
 
+        # Service設定
         service:
           ## @param service.type Service type
           ##
